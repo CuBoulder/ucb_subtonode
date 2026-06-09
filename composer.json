@@ -1,10 +1,6 @@
 {
-  "name": "drupal/ucb_subtonode",
-  "type": "drupal-module",
-  "description": "Create bulletin nodes from webform submissions.",
-  "keywords": ["Drupal"],
-  "license": "GPL-2.0-or-later",
-  "homepage": "https://www.colorado.edu",
-  "minimum-stability": "dev",
-  "require": {}
+    "name": "cu-boulder/ucb_subtonode",
+    "description": "Create bulletin nodes from webform submissions.",
+    "license": "GPL-2.0-or-later",
+    "type": "drupal-custom-module"
 }
