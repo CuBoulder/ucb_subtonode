@@ -1,0 +1,19 @@
+uuid: 3539d736-122a-477d-a0c1-16e37a624112
+langcode: en
+status: true
+dependencies:
+  module:
+    - link
+    - node
+id: node.field_bulletin_contact_website
+field_name: field_bulletin_contact_website
+entity_type: node
+type: link
+settings: {  }
+module: link
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

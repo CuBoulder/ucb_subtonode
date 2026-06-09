@@ -1,0 +1,9 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.category
+vid: category
+name: 'Cone Zone'
+weight: 4
+parent: []

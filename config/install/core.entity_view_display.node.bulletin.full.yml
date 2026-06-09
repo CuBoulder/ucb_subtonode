@@ -1,0 +1,90 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.full
+    - field.field.node.bulletin.body
+    - field.field.node.bulletin.field_bulletin_audience
+    - field.field.node.bulletin.field_bulletin_category
+    - field.field.node.bulletin.field_bulletin_contact_email
+    - field.field.node.bulletin.field_bulletin_contact_name
+    - field.field.node.bulletin.field_bulletin_contact_website
+    - field.field.node.bulletin.field_bulletin_desired_publicati
+    - field.field.node.bulletin.field_bulletin_reference_submiss
+    - field.field.node.bulletin.field_contact_email
+    - field.field.node.bulletin.field_contact_name
+    - field.field.node.bulletin.field_desired_publication_date
+    - field.field.node.bulletin.field_photo
+    - field.field.node.bulletin.field_website
+    - node.type.bulletin
+  module:
+    - datetime
+    - link
+    - text
+    - user
+id: node.bulletin.full
+targetEntityType: node
+bundle: bulletin
+mode: full
+content:
+  body:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_bulletin_contact_email:
+    type: email_mailto
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_bulletin_contact_name:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_bulletin_contact_website:
+    type: link
+    label: hidden
+    settings:
+      trim_length: 80
+      url_only: false
+      url_plain: false
+      rel: ''
+      target: ''
+    third_party_settings: {  }
+    weight: 5
+    region: content
+  field_bulletin_desired_publicati:
+    type: datetime_custom
+    label: hidden
+    settings:
+      timezone_override: ''
+      date_format: 'F j, Y'
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_photo:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  field_bulletin_audience: true
+  field_bulletin_category: true
+  field_bulletin_reference_submiss: true
+  field_contact_email: true
+  field_contact_name: true
+  field_desired_publication_date: true
+  field_website: true
+  links: true

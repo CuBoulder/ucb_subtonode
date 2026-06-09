@@ -1,0 +1,151 @@
+<?php
+
+/**
+ * @file
+ * Install and update hooks for ucb_subtonode.
+ */
+
+use Drupal\taxonomy\Entity\Term;
+use Drupal\webform\Entity\Webform;
+
+/**
+ * Returns the default bulletin taxonomy terms.
+ *
+ * @return array
+ *   Vocabulary machine names mapped to term labels.
+ */
+function _ucb_subtonode_default_terms(): array {
+  return [
+    'audience' => [
+      'Community',
+      'Faculty/Staff',
+      'Graduate Students',
+      'Undergraduate Students',
+    ],
+    'category' => [
+      'Academics',
+      'Administration',
+      'Announcements',
+      'Benefits',
+      'Cone Zone',
+      'Deadlines',
+      'Entrepreneurship',
+      'Family',
+      'Getting Involved',
+      'Health & Wellness',
+      'Housing & Dining',
+      'Jobs & Internships',
+      'Leadership Opportunities',
+      'Meetings',
+      'Nominations',
+      'Research Opportunities',
+      'Safety',
+      'Scholarships, Fellowships & Grants',
+      'Sports & Recreation',
+      'Surveys & Quizzes',
+      'Sustainability',
+      'Technology',
+      'Training & Workshops',
+      'Transportation',
+    ],
+  ];
+}
+
+/**
+ * Ensures default audience and category terms exist.
+ */
+function _ucb_subtonode_ensure_default_terms(): void {
+  $term_storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+
+  foreach (_ucb_subtonode_default_terms() as $vid => $terms) {
+    $existing = $term_storage->loadByProperties(['vid' => $vid]);
+    $existing_names = [];
+    foreach ($existing as $term) {
+      $existing_names[$term->label()] = TRUE;
+    }
+
+    foreach ($terms as $weight => $name) {
+      if (!isset($existing_names[$name])) {
+        Term::create([
+          'vid' => $vid,
+          'name' => $name,
+          'weight' => $weight,
+        ])->save();
+      }
+    }
+  }
+}
+
+/**
+ * Ensures the post_bulletin webform includes a media library image element.
+ */
+function _ucb_subtonode_ensure_webform_media_element(): void {
+  $webform = Webform::load('post_bulletin');
+  if (!$webform) {
+    return;
+  }
+
+  $elements = $webform->getElementsDecoded();
+  $elements['image'] = [
+    '#type' => 'media_library',
+    '#title' => 'Image',
+    '#bundles' => [
+      'image' => 'image',
+    ],
+  ];
+
+  // Keep image near the top of the form, after body.
+  $ordered = [];
+  foreach (['title', 'body', 'image'] as $key) {
+    if (isset($elements[$key])) {
+      $ordered[$key] = $elements[$key];
+      unset($elements[$key]);
+    }
+  }
+  $elements = $ordered + $elements;
+
+  $webform->setElements($elements);
+  $webform->save();
+}
+
+/**
+ * Implements hook_install().
+ */
+function ucb_subtonode_install(): void {
+  _ucb_subtonode_ensure_default_terms();
+  _ucb_subtonode_ensure_webform_media_element();
+}
+
+/**
+ * Ensure bulletin taxonomy terms and webform image field are present.
+ */
+function ucb_subtonode_update_9001(): void {
+  _ucb_subtonode_ensure_default_terms();
+  _ucb_subtonode_ensure_webform_media_element();
+}
+
+/**
+ * Switch the bulletin webform image element to the media library widget.
+ */
+function ucb_subtonode_update_9002(): void {
+  _ucb_subtonode_ensure_webform_media_element();
+}
+
+/**
+ * Migrate bulletin field_photo from image files to media library references.
+ */
+function ucb_subtonode_update_9003(): void {
+  ucb_subtonode_migrate_photo_field_to_media();
+}
+
+/**
+ * Import the bulletin full view display configuration.
+ */
+function ucb_subtonode_update_9004(): void {
+  $config_path = \Drupal::service('extension.list.module')->getPath('ucb_subtonode') . '/config/install/core.entity_view_display.node.bulletin.full.yml';
+  if (!file_exists($config_path)) {
+    return;
+  }
+  $data = \Drupal\Component\Serialization\Yaml::decode(file_get_contents($config_path));
+  \Drupal::configFactory()->getEditable('core.entity_view_display.node.bulletin.full')->setData($data)->save(TRUE);
+}

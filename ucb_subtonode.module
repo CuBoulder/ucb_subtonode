@@ -1,0 +1,295 @@
+<?php
+
+/**
+ * @file
+ * Contains ucb_subtonode.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\file\Entity\File;
+use Drupal\media\Entity\Media;
+use Drupal\node\Entity\Node;
+use Drupal\views\Entity\View;
+
+/**
+ * Implements hook_theme().
+ */
+function ucb_subtonode_theme($existing, $type, $theme, $path) {
+  return [
+    'node__bulletin' => [
+      'base hook' => 'node',
+      'template' => 'node--bulletin',
+      'path' => $path . '/templates',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_help().
+ */
+function ucb_subtonode_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.ucb_subtonode':
+      return '<h3>' . t('About') . '</h3><p>' . t('Create bulletin nodes from webform submissions.') . '</p>';
+  }
+}
+
+/**
+ * Resolves a webform image value to a media entity ID.
+ *
+ * @param mixed $value
+ *   A media ID, media library value, or legacy file ID.
+ *
+ * @return int|null
+ *   The media entity ID, if one could be resolved.
+ */
+function ucb_subtonode_resolve_media_id(mixed $value): ?int {
+  if (empty($value)) {
+    return NULL;
+  }
+
+  if (is_array($value)) {
+    if (isset($value['media_selection_id'])) {
+      return (int) $value['media_selection_id'];
+    }
+    $value = reset($value);
+  }
+
+  if (is_string($value) && str_contains($value, ',')) {
+    $value = strtok($value, ',');
+  }
+
+  if (!is_numeric($value)) {
+    return NULL;
+  }
+
+  $id = (int) $value;
+  $media = Media::load($id);
+  if ($media) {
+    return $id;
+  }
+
+  return ucb_subtonode_get_or_create_media_from_file($id);
+}
+
+/**
+ * Finds or creates an image media entity for a file ID.
+ *
+ * @param int $file_id
+ *   The file entity ID.
+ *
+ * @return int|null
+ *   The media entity ID.
+ */
+function ucb_subtonode_get_or_create_media_from_file(int $file_id): ?int {
+  static $cache = [];
+
+  if (isset($cache[$file_id])) {
+    return $cache[$file_id];
+  }
+
+  $media_storage = \Drupal::entityTypeManager()->getStorage('media');
+  $existing = $media_storage->getQuery()
+    ->condition('bundle', 'image')
+    ->condition('field_media_image.target_id', $file_id)
+    ->range(0, 1)
+    ->accessCheck(FALSE)
+    ->execute();
+
+  if ($existing) {
+    $cache[$file_id] = (int) reset($existing);
+    return $cache[$file_id];
+  }
+
+  $file = File::load($file_id);
+  if (!$file) {
+    return NULL;
+  }
+
+  $media = Media::create([
+    'bundle' => 'image',
+    'name' => $file->getFilename(),
+    'field_media_image' => [
+      'target_id' => $file_id,
+      'alt' => '',
+    ],
+  ]);
+  $media->save();
+
+  $cache[$file_id] = (int) $media->id();
+  return $cache[$file_id];
+}
+
+/**
+ * Deletes the legacy image-based field_photo config and database tables.
+ */
+function ucb_subtonode_delete_legacy_photo_field(): void {
+  $database = \Drupal::database();
+  $schema = $database->schema();
+
+  foreach (['node__field_photo', 'node_revision__field_photo'] as $table) {
+    if ($schema->tableExists($table)) {
+      $schema->dropTable($table);
+    }
+  }
+
+  // Delete config directly to avoid field purge queries against missing tables.
+  if (FieldConfig::load('node.bulletin.field_photo')) {
+    \Drupal::configFactory()->getEditable('field.field.node.bulletin.field_photo')->delete();
+  }
+  if (FieldStorageConfig::load('node.field_photo')) {
+    \Drupal::configFactory()->getEditable('field.storage.node.field_photo')->delete();
+  }
+
+  \Drupal::entityTypeManager()->getStorage('field_config')->resetCache();
+  \Drupal::entityTypeManager()->getStorage('field_storage_config')->resetCache();
+  \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
+}
+
+/**
+ * Collects bulletin photo file IDs keyed by node ID.
+ *
+ * @return array<int, int>
+ *   Node IDs mapped to file IDs.
+ */
+function ucb_subtonode_collect_bulletin_photo_file_ids(): array {
+  $node_file_map = [];
+  $database = \Drupal::database();
+
+  if ($database->schema()->tableExists('node__field_photo')) {
+    $results = $database->select('node__field_photo', 'photo')
+      ->fields('photo', ['entity_id', 'field_photo_target_id'])
+      ->isNotNull('field_photo_target_id')
+      ->execute();
+    foreach ($results as $row) {
+      $node_file_map[(int) $row->entity_id] = (int) $row->field_photo_target_id;
+    }
+    return $node_file_map;
+  }
+
+  $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties([
+    'type' => 'bulletin',
+  ]);
+  foreach ($nodes as $node) {
+    if ($node->hasField('field_photo') && !$node->get('field_photo')->isEmpty()) {
+      $file_id = (int) $node->get('field_photo')->target_id;
+      if ($file_id) {
+        $node_file_map[$node->id()] = $file_id;
+      }
+    }
+  }
+
+  return $node_file_map;
+}
+
+/**
+ * Migrates bulletin field_photo from image files to media references.
+ */
+function ucb_subtonode_migrate_photo_field_to_media(): void {
+  $field_storage = FieldStorageConfig::load('node.field_photo');
+  if ($field_storage && $field_storage->getType() === 'entity_reference') {
+    return;
+  }
+
+  $node_media_map = [];
+  foreach (ucb_subtonode_collect_bulletin_photo_file_ids() as $nid => $file_id) {
+    $media_id = ucb_subtonode_get_or_create_media_from_file($file_id);
+    if ($media_id) {
+      $node_media_map[$nid] = $media_id;
+    }
+  }
+
+  ucb_subtonode_delete_legacy_photo_field();
+
+  FieldStorageConfig::create([
+    'field_name' => 'field_photo',
+    'entity_type' => 'node',
+    'type' => 'entity_reference',
+    'cardinality' => 1,
+    'settings' => [
+      'target_type' => 'media',
+    ],
+  ])->save();
+
+  FieldConfig::create([
+    'field_name' => 'field_photo',
+    'entity_type' => 'node',
+    'bundle' => 'bulletin',
+    'label' => 'Photo',
+    'settings' => [
+      'handler' => 'default:media',
+      'handler_settings' => [
+        'target_bundles' => [
+          'image' => 'image',
+        ],
+        'sort' => [
+          'field' => '_none',
+          'direction' => 'ASC',
+        ],
+        'auto_create' => FALSE,
+        'auto_create_bundle' => 'image',
+      ],
+    ],
+  ])->save();
+
+  $form_display = \Drupal::entityTypeManager()
+    ->getStorage('entity_form_display')
+    ->load('node.bulletin.default');
+  if ($form_display) {
+    $form_display->setComponent('field_photo', [
+      'type' => 'media_library_widget',
+      'weight' => 2,
+      'region' => 'content',
+      'settings' => [
+        'media_types' => [],
+      ],
+    ])->save();
+  }
+
+  $view_display = \Drupal::entityTypeManager()
+    ->getStorage('entity_view_display')
+    ->load('node.bulletin.default');
+  if ($view_display) {
+    $view_display->setComponent('field_photo', [
+      'type' => 'entity_reference_entity_view',
+      'weight' => 0,
+      'region' => 'content',
+      'label' => 'hidden',
+      'settings' => [
+        'view_mode' => 'default',
+        'link' => FALSE,
+      ],
+    ])->save();
+  }
+
+  foreach ($node_media_map as $nid => $media_id) {
+    $node = Node::load($nid);
+    if ($node) {
+      $node->set('field_photo', ['target_id' => $media_id]);
+      $node->save();
+    }
+  }
+
+  foreach (['buff_bulletin_board_data', 'buff_bulletin_board_home'] as $view_id) {
+    $view = View::load($view_id);
+    if (!$view) {
+      continue;
+    }
+    $displays = $view->get('display');
+    $changed = FALSE;
+    foreach (array_keys($displays) as $display_id) {
+      if (!isset($displays[$display_id]['display_options']['fields']['field_photo'])) {
+        continue;
+      }
+      $displays[$display_id]['display_options']['fields']['field_photo']['type'] = 'media_thumbnail';
+      $displays[$display_id]['display_options']['fields']['field_photo']['group_column'] = 'target_id';
+      $changed = TRUE;
+    }
+    if ($changed) {
+      $view->set('display', $displays);
+      $view->save();
+    }
+  }
+}

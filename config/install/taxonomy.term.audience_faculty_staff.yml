@@ -1,0 +1,9 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.audience
+vid: audience
+name: Faculty/Staff
+weight: 1
+parent: []

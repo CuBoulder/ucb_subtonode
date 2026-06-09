@@ -1,0 +1,17 @@
+name: 'CU Boulder Submission to Node'
+type: module
+description: 'Create bulletin nodes from webform submissions.'
+package: 'CU Boulder'
+core_version_requirement: '^10 || ^11'
+dependencies:
+  - cu_boulder_content_types
+  - datetime
+  - image
+  - link
+  - media
+  - media_library
+  - media_library_form_element
+  - node
+  - taxonomy
+  - text
+  - webform

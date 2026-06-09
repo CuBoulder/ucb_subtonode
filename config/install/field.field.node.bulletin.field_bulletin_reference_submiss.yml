@@ -1,0 +1,22 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_bulletin_reference_submiss
+    - node.type.bulletin
+  module:
+    - webform
+id: node.bulletin.field_bulletin_reference_submiss
+field_name: field_bulletin_reference_submiss
+entity_type: node
+bundle: bulletin
+label: 'Reference Submission'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:webform_submission'
+  handler_settings: {  }
+field_type: entity_reference

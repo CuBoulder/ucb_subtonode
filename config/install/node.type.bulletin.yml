@@ -1,0 +1,16 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - menu_ui
+third_party_settings:
+  menu_ui:
+    available_menus: {  }
+    parent: ''
+name: Bulletin
+type: bulletin
+description: 'Node version of Buff Bulletins.'
+help: "All submissions are reviewed by the Bulletin Board editorial team for content before posting. Select postings will be included in CU Boulder Today newsletter. (on campus address, caveats...)\r\n\r\nAll of the text entered below will appear in your posting. Please select the appropriate tags from the list below. These tags should reflect the main audience for your posting, as well as the topics covered."
+new_revision: true
+preview_mode: 1
+display_submitted: false

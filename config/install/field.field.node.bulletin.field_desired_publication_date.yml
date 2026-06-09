@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_desired_publication_date
+    - node.type.bulletin
+id: node.bulletin.field_desired_publication_date
+field_name: field_desired_publication_date
+entity_type: node
+bundle: bulletin
+label: 'Desired Publication Date (legacy)'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

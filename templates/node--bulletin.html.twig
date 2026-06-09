@@ -1,0 +1,69 @@
+{{ attach_library('ucb_subtonode/bulletin') }}
+
+{# Dummy variable to ensure that all content tags are set for caching purposes #}
+{% set content_render = content|render %}
+
+{% set classes = [
+  'node',
+  'node--type-' ~ node.bundle|clean_class,
+  'bulletin',
+  'full',
+  'clearfix',
+  'ucb-bulletin',
+  not node.isPublished() ? 'node--unpublished',
+  view_mode ? 'node--view-mode-' ~ view_mode|clean_class,
+] %}
+
+<div class="ucb-bulletin-page ucb-content-wrapper container ucb-contained-row">
+  <div class="layout-row row">
+    <section class="col-12">
+      <div class="region region-content">
+        {% if not is_front %}
+          <h1 class="page-header">
+            <span>{{ label }}</span>
+          </h1>
+        {% else %}
+          <h1 class="visually-hidden">
+            {{ label }}
+          </h1>
+        {% endif %}
+
+        <article{{ attributes.addClass(classes) }}>
+          <div{{ content_attributes.addClass('content') }}>
+            <div class="row bulletin-main g-3 g-md-4">
+              {% if content.field_photo %}
+                <div class="col-12 col-md-4 col-lg-4 bulletin-photo">
+                  {{ content.field_photo }}
+                </div>
+              {% endif %}
+
+              {% if content.body %}
+                <div class="{{ content.field_photo ? 'col-12 col-md-8 col-lg-8' : 'col-12' }} bulletin-body">
+                  {{ content.body }}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="bulletin-footer">
+              {% if content.field_bulletin_desired_publicati %}
+                {{ content.field_bulletin_desired_publicati }}
+              {% endif %}
+
+              {% if content.field_bulletin_contact_name %}
+                {{ content.field_bulletin_contact_name }}
+              {% endif %}
+
+              {% if content.field_bulletin_contact_email %}
+                {{ content.field_bulletin_contact_email }}
+              {% endif %}
+
+              {% if content.field_bulletin_contact_website %}
+                {{ content.field_bulletin_contact_website }}
+              {% endif %}
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,5 @@
+bulletin:
+  version: 1.x
+  css:
+    theme:
+      css/ucb-bulletin.css: { weight: 0 }

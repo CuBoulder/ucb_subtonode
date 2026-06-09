@@ -1,0 +1,9 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.category
+vid: category
+name: Nominations
+weight: 14
+parent: []

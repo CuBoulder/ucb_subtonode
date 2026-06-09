@@ -1,0 +1,53 @@
+.ucb-bulletin-page .page-header {
+  margin-bottom: 1rem;
+}
+
+.ucb-bulletin .content {
+  margin-bottom: 1.5rem;
+}
+
+.ucb-bulletin .bulletin-main {
+  margin-bottom: 1rem;
+}
+
+.ucb-bulletin .bulletin-photo {
+  margin-bottom: 0;
+}
+
+.ucb-bulletin .bulletin-photo .field,
+.ucb-bulletin .bulletin-photo .field__item,
+.ucb-bulletin .bulletin-photo .media,
+.ucb-bulletin .bulletin-photo img {
+  margin-bottom: 0;
+}
+
+.ucb-bulletin .bulletin-photo img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+.ucb-bulletin .bulletin-body .field {
+  margin-bottom: 0;
+}
+
+.ucb-bulletin .bulletin-body p:last-child {
+  margin-bottom: 0;
+}
+
+.ucb-bulletin .bulletin-footer {
+  clear: both;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #cfcecd;
+}
+
+.ucb-bulletin .bulletin-footer .field {
+  margin-bottom: 0.35rem;
+}
+
+.ucb-bulletin .bulletin-footer .field:last-child {
+  margin-bottom: 0;
+}
+
