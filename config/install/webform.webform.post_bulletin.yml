@@ -60,13 +60,15 @@ elements: |-
     '#type': checkbox
     '#title': 'Publish bulletin'
     '#access_create_roles':
-      - administrator
-    '#access_update_roles':
-      - site_owner
-      - administrator
       - developer
+      - architect
+    '#access_update_roles':
+      - site_manager
+      - developer
+      - architect
     '#access_view_roles':
-      - administrator
+      - developer
+      - architect
 css: ''
 javascript: ''
 settings:
@@ -211,13 +213,16 @@ access:
     permissions: {  }
   view_any:
     roles:
-      - site_owner
-      - administrator
       - developer
+      - architect
+      - site_manager
     users: {  }
     permissions: {  }
   update_any:
-    roles: {  }
+    roles:
+      - developer
+      - architect
+      - site_manager
     users: {  }
     permissions: {  }
   delete_any:
@@ -240,9 +245,9 @@ access:
     permissions: {  }
   delete_own:
     roles:
-      - site_owner
-      - administrator
       - developer
+      - architect
+      - site_manager
     users: {  }
     permissions: {  }
   administer:

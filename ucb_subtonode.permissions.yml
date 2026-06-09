@@ -1,0 +1,3 @@
+create bulletin from webform submission:
+  title: 'Create bulletin from webform submission'
+  description: 'Create bulletin nodes from webform submissions.'

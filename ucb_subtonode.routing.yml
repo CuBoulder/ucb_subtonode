@@ -4,7 +4,7 @@ ucb_subtonode.create_node:
     _controller: '\Drupal\ucb_subtonode\Controller\SubToNodeController::subtonode'
     _title: 'Create Node'
   requirements:
-    _permission: 'administer webform submission'
+    _permission: 'create bulletin from webform submission'
   options:
     parameters:
       webform_submission:
@@ -16,7 +16,7 @@ ucb_subtonode.create_node_view:
     _controller: '\Drupal\ucb_subtonode\Controller\SubToNodeController::subtonode'
     _title: 'Create Node'
   requirements:
-    _permission: 'administer webform submission'
+    _permission: 'create bulletin from webform submission'
   options:
     parameters:
       webform_submission:

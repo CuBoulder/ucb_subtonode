@@ -80,6 +80,68 @@ function _ucb_subtonode_ensure_default_terms(): void {
 }
 
 /**
+ * Replaces site_owner with site_manager in role lists and remember_roles.
+ *
+ * site_owner is symbolic and must not convey permissions.
+ *
+ * @param array $data
+ *   Config data to update in place.
+ */
+function _ucb_subtonode_replace_site_owner_roles(array &$data): void {
+  foreach ($data as $key => &$value) {
+    if (!is_array($value)) {
+      continue;
+    }
+
+    if ($key === 'remember_roles' && array_key_exists('site_owner', $value)) {
+      unset($value['site_owner']);
+      if (!array_key_exists('site_manager', $value)) {
+        $value['site_manager'] = '0';
+      }
+    }
+    elseif ($key === 'roles' && in_array('site_owner', $value, TRUE)) {
+      $value = array_values(array_unique(array_map(
+        static fn (string $role): string => $role === 'site_owner' ? 'site_manager' : $role,
+        $value,
+      )));
+    }
+    else {
+      _ucb_subtonode_replace_site_owner_roles($value);
+    }
+  }
+}
+
+/**
+ * Ensures post_bulletin webform access requires authenticated users to submit.
+ */
+function _ucb_subtonode_ensure_webform_access(): void {
+  $webform = Webform::load('post_bulletin');
+  if (!$webform) {
+    return;
+  }
+
+  $access = $webform->get('access');
+  $authenticated_roles = ['authenticated'];
+
+  foreach (['create', 'view_own', 'update_own'] as $operation) {
+    $access[$operation]['roles'] = $authenticated_roles;
+  }
+
+  $editorial_roles = ['developer', 'architect', 'site_manager'];
+  foreach (['view_any', 'update_any', 'delete_own'] as $operation) {
+    $access[$operation]['roles'] = $editorial_roles;
+  }
+  _ucb_subtonode_replace_site_owner_roles($access);
+
+  $elements = $webform->getElementsDecoded();
+  _ucb_subtonode_replace_site_owner_roles($elements);
+
+  $webform->set('access', $access);
+  $webform->setElements($elements);
+  $webform->save();
+}
+
+/**
  * Ensures the post_bulletin webform includes a media library image element.
  */
 function _ucb_subtonode_ensure_webform_media_element(): void {
@@ -112,6 +174,58 @@ function _ucb_subtonode_ensure_webform_media_element(): void {
 }
 
 /**
+ * Returns bulletin node permissions granted to editorial roles.
+ *
+ * @return string[]
+ *   Permission machine names.
+ */
+function _ucb_subtonode_bulletin_node_permissions(): array {
+  return [
+    'create bulletin content',
+    'edit any bulletin content',
+    'edit own bulletin content',
+    'delete any bulletin content',
+    'delete own bulletin content',
+    'delete bulletin revisions',
+    'revert bulletin revisions',
+    'view bulletin revisions',
+  ];
+}
+
+/**
+ * Grants bulletin and webform submission permissions to site roles.
+ */
+function _ucb_subtonode_grant_permissions(): void {
+  $bulletin_permissions = _ucb_subtonode_bulletin_node_permissions();
+  $role_permissions = [
+    'developer' => array_merge($bulletin_permissions, ['create bulletin from webform submission']),
+    'architect' => array_merge($bulletin_permissions, ['create bulletin from webform submission']),
+    'site_manager' => array_merge($bulletin_permissions, ['create bulletin from webform submission']),
+    'content_editor' => $bulletin_permissions,
+  ];
+
+  $role_storage = \Drupal::entityTypeManager()->getStorage('user_role');
+  foreach ($role_permissions as $role_id => $permissions) {
+    $role = $role_storage->load($role_id);
+    if (!$role) {
+      continue;
+    }
+
+    $changed = FALSE;
+    foreach ($permissions as $permission) {
+      if (!$role->hasPermission($permission)) {
+        $role->grantPermission($permission);
+        $changed = TRUE;
+      }
+    }
+
+    if ($changed) {
+      $role->save();
+    }
+  }
+}
+
+/**
  * Installs bulletin board views that are not yet present.
  */
 function _ucb_subtonode_install_views(): void {
@@ -133,7 +247,9 @@ function _ucb_subtonode_install_views(): void {
  */
 function ucb_subtonode_install(): void {
   _ucb_subtonode_ensure_default_terms();
+  _ucb_subtonode_ensure_webform_access();
   _ucb_subtonode_ensure_webform_media_element();
+  _ucb_subtonode_grant_permissions();
 }
 
 /**
@@ -175,4 +291,43 @@ function ucb_subtonode_update_9004(): void {
  */
 function ucb_subtonode_update_9005(): void {
   _ucb_subtonode_install_views();
+}
+
+/**
+ * Grant bulletin content and webform submission permissions to site roles.
+ */
+function ucb_subtonode_update_9006(): void {
+  _ucb_subtonode_ensure_webform_access();
+  _ucb_subtonode_grant_permissions();
+}
+
+/**
+ * Replace site_owner with site_manager in bulletin views and webform access.
+ */
+function ucb_subtonode_update_9007(): void {
+  $view_ids = [
+    'views.view.buff_bulletin_board',
+    'views.view.buff_bulletin_board_data',
+    'views.view.buff_bulletin_board_home',
+  ];
+
+  foreach ($view_ids as $config_name) {
+    $config = \Drupal::configFactory()->getEditable($config_name);
+    if ($config->isNew()) {
+      continue;
+    }
+
+    $data = $config->getRawData();
+    _ucb_subtonode_replace_site_owner_roles($data);
+    $config->setData($data)->save(TRUE);
+  }
+
+  _ucb_subtonode_ensure_webform_access();
+}
+
+/**
+ * Grant update_any and delete_own webform submission access to editorial roles.
+ */
+function ucb_subtonode_update_9008(): void {
+  _ucb_subtonode_ensure_webform_access();
 }
