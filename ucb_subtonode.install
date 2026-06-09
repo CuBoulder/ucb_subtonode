@@ -5,6 +5,9 @@
  * Install and update hooks for ucb_subtonode.
  */
 
+use Drupal\Component\Serialization\Yaml;
+use Drupal\Core\Config\FileStorage;
+use Drupal\Core\Config\StorageInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\webform\Entity\Webform;
 
@@ -109,6 +112,23 @@ function _ucb_subtonode_ensure_webform_media_element(): void {
 }
 
 /**
+ * Installs bulletin board views that are not yet present.
+ */
+function _ucb_subtonode_install_views(): void {
+  $module_path = \Drupal::service('extension.list.module')->getPath('ucb_subtonode');
+  $installer = \Drupal::service('config.installer');
+
+  $install_storage = new FileStorage($module_path . '/config/install', StorageInterface::DEFAULT_COLLECTION);
+  $installer->installOptionalConfig($install_storage);
+
+  $optional_path = $module_path . '/config/optional';
+  if (is_dir($optional_path)) {
+    $optional_storage = new FileStorage($optional_path, StorageInterface::DEFAULT_COLLECTION);
+    $installer->installOptionalConfig($optional_storage);
+  }
+}
+
+/**
  * Implements hook_install().
  */
 function ucb_subtonode_install(): void {
@@ -146,6 +166,13 @@ function ucb_subtonode_update_9004(): void {
   if (!file_exists($config_path)) {
     return;
   }
-  $data = \Drupal\Component\Serialization\Yaml::decode(file_get_contents($config_path));
+  $data = Yaml::decode(file_get_contents($config_path));
   \Drupal::configFactory()->getEditable('core.entity_view_display.node.bulletin.full')->setData($data)->save(TRUE);
+}
+
+/**
+ * Install bulletin board views on sites that enabled the module earlier.
+ */
+function ucb_subtonode_update_9005(): void {
+  _ucb_subtonode_install_views();
 }

@@ -13,11 +13,12 @@ dependencies:
     - node.type.bulletin
   module:
     - datetime
-    - image
     - link
+    - media
     - node
     - text
     - user
+    - views
 id: buff_bulletin_board_data
 label: 'Buff Bulletin Board Data'
 module: views

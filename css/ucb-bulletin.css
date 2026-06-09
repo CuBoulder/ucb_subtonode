@@ -51,3 +51,24 @@
   margin-bottom: 0;
 }
 
+.ucb-bulletin-page .bulletin-board-header {
+  margin-bottom: 1rem;
+}
+
+.ucb-bulletin-page .bulletin-main {
+  align-items: flex-start;
+}
+
+.ucb-bulletin-page .bulletin-board-sidebar {
+  position: sticky;
+  top: 1rem;
+}
+
+.ucb-bulletin-page .bulletin-board-sidebar .views-exposed-form {
+  margin-bottom: 0;
+}
+
+.ucb-bulletin-page .bulletin-board-results .pager {
+  margin-top: 1.5rem;
+}
+

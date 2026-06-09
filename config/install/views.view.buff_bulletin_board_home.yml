@@ -15,12 +15,13 @@ dependencies:
     - taxonomy.vocabulary.category
   module:
     - datetime
-    - image
     - link
+    - media
     - node
     - taxonomy
     - text
     - user
+    - views
 id: buff_bulletin_board_home
 label: 'Buff Bulletin Board'
 module: views

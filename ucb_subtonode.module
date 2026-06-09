@@ -23,7 +23,25 @@ function ucb_subtonode_theme($existing, $type, $theme, $path) {
       'template' => 'node--bulletin',
       'path' => $path . '/templates',
     ],
+    'views_view__buff_bulletin_board_home__page_1' => [
+      'base hook' => 'views_view',
+      'template' => 'views-view--buff-bulletin-board-home--page-1',
+      'path' => $path . '/templates',
+    ],
   ];
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for views_view templates.
+ */
+function ucb_subtonode_preprocess_views_view(array &$variables): void {
+  $view = $variables['view'];
+  if ($view->id() !== 'buff_bulletin_board_home' || $view->current_display !== 'page_1') {
+    return;
+  }
+
+  $variables['is_front'] = \Drupal::service('path.matcher')->isFrontPage();
+  $variables['page_title'] = $view->getTitle() ?: $view->storage->label();
 }
 
 /**

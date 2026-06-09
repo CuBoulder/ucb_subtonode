@@ -1,0 +1,77 @@
+{{ attach_library('ucb_subtonode/bulletin') }}
+
+{%
+  set classes = [
+    'view',
+    'view-' ~ id|clean_class,
+    'view-id-' ~ id,
+    'view-display-id-' ~ display_id,
+    'bulletin',
+    'clearfix',
+    'ucb-bulletin',
+    dom_id ? 'js-view-dom-id-' ~ dom_id,
+  ]
+%}
+
+<div class="ucb-bulletin-page ucb-content-wrapper container ucb-contained-row">
+  <div class="layout-row row">
+    <section class="col-12">
+      <div class="region region-content">
+        {{ title_prefix }}
+
+        {% if not is_front %}
+          <h1 class="page-header">
+            <span>{{ page_title }}</span>
+          </h1>
+        {% else %}
+          <h1 class="visually-hidden">
+            {{ page_title }}
+          </h1>
+        {% endif %}
+
+        {{ title }}
+        {{ title_suffix }}
+
+        <div{{ attributes.addClass(classes) }}>
+          <div class="content">
+            {% if header %}
+              <div class="bulletin-board-header">
+                {{ header }}
+              </div>
+            {% endif %}
+
+            <div class="row bulletin-main g-3 g-md-4">
+              <div class="col-12 col-md-8 col-lg-8 bulletin-body bulletin-board-results">
+                {{ attachment_before }}
+
+                {% if rows -%}
+                  {{ rows }}
+                {% elseif empty -%}
+                  {{ empty }}
+                {% endif %}
+
+                {{ pager }}
+                {{ attachment_after }}
+                {{ more }}
+              </div>
+
+              {% if exposed %}
+                <aside class="col-12 col-md-4 col-lg-4 bulletin-photo bulletin-board-sidebar" aria-label="{{ 'Filter bulletins'|t }}">
+                  {{ exposed }}
+                </aside>
+              {% endif %}
+            </div>
+
+            {% if footer %}
+              <div class="bulletin-footer bulletin-board-footer">
+                {{ footer }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        {{ feed_icons }}
+      </div>
+    </section>
+  </div>
+</div>
