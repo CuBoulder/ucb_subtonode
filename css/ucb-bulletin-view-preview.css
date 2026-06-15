@@ -1,0 +1,130 @@
+/**
+ * Styles the Views UI live preview for the bulletin board.
+ *
+ * Claro does not load the front-end theme, so this file approximates the
+ * boulder_base layout (grid, spacing, typography) inside #views-live-preview.
+ */
+
+.views-live-preview .section-title,
+.views-live-preview .contextual {
+  display: none;
+}
+
+.views-live-preview .preview-section {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.views-live-preview .view > * {
+  margin-top: 0;
+}
+
+.views-live-preview .ucb-bulletin-page {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 12px;
+}
+
+.views-live-preview .ucb-bulletin-page > .layout-row > .col-12 > .region-content > .page-header {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.views-live-preview .ucb-bulletin-page .row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -12px;
+  margin-left: -12px;
+}
+
+.views-live-preview .ucb-bulletin-page .row > [class*="col-"],
+.views-live-preview .ucb-bulletin-page [class*="col-"] {
+  position: relative;
+  width: 100%;
+  padding-right: 12px;
+  padding-left: 12px;
+  box-sizing: border-box;
+}
+
+.views-live-preview .ucb-bulletin-page .col-12 {
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .views-live-preview .ucb-bulletin-page .col-md-4 {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+  }
+
+  .views-live-preview .ucb-bulletin-page .col-md-8 {
+    flex: 0 0 66.666667%;
+    max-width: 66.666667%;
+  }
+
+  .views-live-preview .ucb-bulletin-page .bulletin-main {
+    align-items: flex-start;
+  }
+}
+
+@media (min-width: 992px) {
+  .views-live-preview .ucb-bulletin-page .col-lg-4 {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+  }
+
+  .views-live-preview .ucb-bulletin-page .col-lg-8 {
+    flex: 0 0 66.666667%;
+    max-width: 66.666667%;
+  }
+}
+
+/* Each entity row renders the full node template with its own page wrapper. */
+.views-live-preview .views-row .ucb-bulletin-page {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.views-live-preview .views-row .ucb-bulletin-page .layout-row,
+.views-live-preview .views-row .ucb-bulletin-page .region-content {
+  margin: 0;
+  padding: 0;
+}
+
+.views-live-preview div.views-row + div.views-row {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #cfcecd;
+}
+
+.views-live-preview .page-header {
+  margin-bottom: 1rem;
+}
+
+.views-live-preview .page-header a {
+  color: #0277bd;
+  text-decoration: none;
+}
+
+.views-live-preview .page-header a:hover,
+.views-live-preview .page-header a:focus {
+  text-decoration: underline;
+}
+
+.views-live-preview .bulletin-board-header {
+  margin-bottom: 1rem;
+}
+
+.views-live-preview .bulletin-board-sidebar {
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .views-live-preview .bulletin-board-sidebar {
+    margin-top: 0;
+  }
+}

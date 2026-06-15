@@ -3,3 +3,10 @@ bulletin:
   css:
     theme:
       css/ucb-bulletin.css: { weight: 0 }
+
+bulletin-view-preview:
+  version: 1.x
+  css:
+    theme:
+      css/ucb-bulletin.css: { weight: 0 }
+      css/ucb-bulletin-view-preview.css: { weight: 1 }

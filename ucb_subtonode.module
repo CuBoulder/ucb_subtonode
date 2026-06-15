@@ -12,6 +12,8 @@ use Drupal\file\Entity\File;
 use Drupal\media\Entity\Media;
 use Drupal\node\Entity\Node;
 use Drupal\views\Entity\View;
+use Drupal\views\ViewEntityInterface;
+use Drupal\views\ViewExecutable;
 
 /**
  * Implements hook_theme().
@@ -49,12 +51,52 @@ function ucb_subtonode_preprocess_node(array &$variables): void {
  */
 function ucb_subtonode_preprocess_views_view(array &$variables): void {
   $view = $variables['view'];
-  if ($view->id() !== 'buff_bulletin_board_home' || $view->current_display !== 'page_1') {
+  if ($view->id() !== 'buff_bulletin_board_home') {
+    return;
+  }
+
+  if (!empty($view->live_preview)) {
+    $variables['#attached']['library'][] = 'ucb_subtonode/bulletin-view-preview';
+  }
+
+  if ($view->current_display !== 'page_1') {
     return;
   }
 
   $variables['is_front'] = \Drupal::service('path.matcher')->isFrontPage();
   $variables['page_title'] = $view->getTitle() ?: $view->storage->label();
+}
+
+/**
+ * Implements hook_views_pre_render().
+ */
+function ucb_subtonode_views_pre_render(ViewExecutable $view): void {
+  if (empty($view->live_preview) || $view->id() !== 'buff_bulletin_board_home') {
+    return;
+  }
+
+  $view->element['#attached']['library'][] = 'ucb_subtonode/bulletin-view-preview';
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function ucb_subtonode_page_attachments(array &$attachments): void {
+  $route_name = \Drupal::routeMatch()->getRouteName();
+  if (!in_array($route_name, [
+    'entity.view.edit_form',
+    'entity.view.edit_display_form',
+    'entity.view.preview_form',
+  ], TRUE)) {
+    return;
+  }
+
+  $view = \Drupal::routeMatch()->getParameter('view');
+  if (!$view instanceof ViewEntityInterface || $view->id() !== 'buff_bulletin_board_home') {
+    return;
+  }
+
+  $attachments['#attached']['library'][] = 'ucb_subtonode/bulletin-view-preview';
 }
 
 /**
