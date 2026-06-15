@@ -18,7 +18,11 @@
   <div class="layout-row row">
     <section class="col-12">
       <div class="region region-content">
-        {% if not is_front %}
+        {% if title_links_to_node %}
+          <h2 class="page-header">
+            <a href="{{ url }}">{{ label }}</a>
+          </h2>
+        {% elseif not is_front %}
           <h1 class="page-header">
             <span>{{ label }}</span>
           </h1>
@@ -30,15 +34,16 @@
 
         <article{{ attributes.addClass(classes) }}>
           <div{{ content_attributes.addClass('content') }}>
-            <div class="row bulletin-main g-3 g-md-4">
-              {% if content.field_photo %}
+            {% set has_photo = node.hasField('field_photo') and not node.field_photo.isEmpty() %}
+            <div class="row bulletin-main g-3 g-md-4{{ has_photo ? '' : ' bulletin-main--no-photo' }}">
+              {% if has_photo %}
                 <div class="col-12 col-md-4 col-lg-4 bulletin-photo">
                   {{ content.field_photo }}
                 </div>
               {% endif %}
 
               {% if content.body %}
-                <div class="{{ content.field_photo ? 'col-12 col-md-8 col-lg-8' : 'col-12' }} bulletin-body">
+                <div class="{{ has_photo ? 'col-12 col-md-8 col-lg-8' : 'col-12' }} bulletin-body">
                   {{ content.body }}
                 </div>
               {% endif %}
