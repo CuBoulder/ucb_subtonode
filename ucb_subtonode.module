@@ -5,12 +5,14 @@
  * Contains ucb_subtonode.module.
  */
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\file\Entity\File;
 use Drupal\media\Entity\Media;
 use Drupal\node\Entity\Node;
+use Drupal\node\NodeInterface;
 use Drupal\views\Entity\View;
 use Drupal\views\ViewEntityInterface;
 use Drupal\views\ViewExecutable;
@@ -34,6 +36,30 @@ function ucb_subtonode_theme($existing, $type, $theme, $path) {
 }
 
 /**
+ * Determines whether a bulletin title should link to its node in this context.
+ */
+function ucb_subtonode_bulletin_title_links_to_node(NodeInterface $node, string $route_name): bool {
+  if (isset($node->view) && $node->view->id() === 'buff_bulletin_board_home') {
+    return TRUE;
+  }
+
+  if ($route_name === 'view.buff_bulletin_board_home.page_1') {
+    return TRUE;
+  }
+
+  if (in_array($route_name, [
+    'entity.view.edit_form',
+    'entity.view.edit_display_form',
+    'entity.view.preview_form',
+  ], TRUE)) {
+    $view = \Drupal::routeMatch()->getParameter('view');
+    return $view instanceof ViewEntityInterface && $view->id() === 'buff_bulletin_board_home';
+  }
+
+  return FALSE;
+}
+
+/**
  * Implements hook_preprocess_HOOK() for node templates.
  */
 function ucb_subtonode_preprocess_node(array &$variables): void {
@@ -42,8 +68,16 @@ function ucb_subtonode_preprocess_node(array &$variables): void {
     return;
   }
 
-  // Views entity rows set $node->view during rendering, not #view on elements.
-  $variables['title_links_to_node'] = isset($node->view);
+  $route_name = \Drupal::routeMatch()->getRouteName() ?? '';
+  $variables['title_links_to_node'] = ucb_subtonode_bulletin_title_links_to_node($node, $route_name);
+
+  // Keep listing and canonical node renders in separate cache bins.
+  if ($variables['view_mode'] === 'full') {
+    $variables['elements']['#cache']['contexts'] = Cache::mergeContexts(
+      $variables['elements']['#cache']['contexts'] ?? [],
+      ['route']
+    );
+  }
 }
 
 /**
