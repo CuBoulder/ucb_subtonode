@@ -38,17 +38,29 @@
 
 .ucb-bulletin .bulletin-footer {
   clear: both;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #cfcecd;
+  background: #f7f7f7;
+  margin-top: 1%;
+  margin-bottom: 5%;
+  padding: 1%;
+  border-bottom: 1px solid #e2e2e2;
+  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
-.ucb-bulletin .bulletin-footer .field {
-  margin-bottom: 0.35rem;
-}
-
-.ucb-bulletin .bulletin-footer .field:last-child {
+.ucb-bulletin .bulletin-footer > * {
   margin-bottom: 0;
+}
+
+.ucb-bulletin .bulletin-footer > *:not(:last-child)::after {
+  content: "|";
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.ucb-bulletin .bulletin-footer a {
+  display: inline;
 }
 
 .ucb-bulletin-page .bulletin-board-header {
