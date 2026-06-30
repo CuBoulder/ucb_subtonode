@@ -1,0 +1,28 @@
+{#
+/**
+ * @file
+ * Bulletin submitter account page for users with only the Authenticated role.
+ */
+#}
+{{ attach_library('ucb_subtonode/bulletin-user') }}
+
+<div class="layout-container ucb-page-container">
+  {{ block('page_header', 'page.html.twig') }}
+  <div{{ create_attribute({ class: ['ucb-page-content', ucb_heading_font == 'normal' ? 'ucb-heading-font-normal'] }) }}>
+    {{ page.highlighted }}
+    <main role="main">
+      <a id="main-content" tabindex="-1"></a>
+      <div class="layout-content container ucb-subtonode-user-links">
+        <ul class="ucb-subtonode-user-links__list">
+          <li>
+            <a href="{{ submit_bulletin_url }}">{{ 'Submit Bulletin'|t }}</a>
+          </li>
+          <li>
+            <a href="{{ instructions_guidelines_url }}">{{ 'Instructions & Guidelines'|t }}</a>
+          </li>
+        </ul>
+      </div>
+    </main>
+  </div>
+  {{ block('page_footer', 'page.html.twig') }}
+</div>
