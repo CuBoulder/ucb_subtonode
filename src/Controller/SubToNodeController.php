@@ -3,6 +3,8 @@
 namespace Drupal\ucb_subtonode\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\node\Entity\Node;
 use Drupal\webform\WebformSubmissionInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -28,7 +30,11 @@ class SubToNodeController extends ControllerBase {
 
     $timestamp = NULL;
     if (!empty($submission_array['bulletin_publish_date'])) {
-      $timestamp = date('Y-m-d\TH:i:s', strtotime($submission_array['bulletin_publish_date']));
+      // Interpret the date-only webform value in the site timezone, then store
+      // UTC so the calendar day is preserved (avoids an off-by-one day shift).
+      $date = new DrupalDateTime($submission_array['bulletin_publish_date'], date_default_timezone_get());
+      $date->setTimezone(new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE));
+      $timestamp = $date->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
     }
 
     $website = $submission_array['website'] ?? '';
