@@ -197,11 +197,12 @@ function _ucb_subtonode_bulletin_node_permissions(): array {
  */
 function _ucb_subtonode_grant_permissions(): void {
   $bulletin_permissions = _ucb_subtonode_bulletin_node_permissions();
+  $create_from_submission = ['create bulletin from webform submission'];
   $role_permissions = [
-    'developer' => array_merge($bulletin_permissions, ['create bulletin from webform submission']),
-    'architect' => array_merge($bulletin_permissions, ['create bulletin from webform submission']),
-    'site_manager' => array_merge($bulletin_permissions, ['create bulletin from webform submission']),
-    'content_editor' => $bulletin_permissions,
+    'developer' => array_merge($bulletin_permissions, $create_from_submission),
+    'architect' => array_merge($bulletin_permissions, $create_from_submission),
+    'site_manager' => array_merge($bulletin_permissions, $create_from_submission),
+    'content_editor' => array_merge($bulletin_permissions, $create_from_submission),
   ];
 
   $role_storage = \Drupal::entityTypeManager()->getStorage('user_role');
@@ -330,4 +331,11 @@ function ucb_subtonode_update_9007(): void {
  */
 function ucb_subtonode_update_9008(): void {
   _ucb_subtonode_ensure_webform_access();
+}
+
+/**
+ * Grant create-bulletin-from-submission permission to content_editor.
+ */
+function ucb_subtonode_update_9009(): void {
+  _ucb_subtonode_grant_permissions();
 }
