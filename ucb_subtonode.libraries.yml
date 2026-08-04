@@ -10,3 +10,9 @@ bulletin-view-preview:
     theme:
       css/ucb-bulletin.css: { weight: 0 }
       css/ucb-bulletin-view-preview.css: { weight: 1 }
+
+bulletin-user:
+  version: 1.x
+  css:
+    theme:
+      css/ucb-bulletin-user.css: { weight: 0 }
