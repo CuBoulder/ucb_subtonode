@@ -3,6 +3,8 @@
 namespace Drupal\ucb_subtonode\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\node\Entity\Node;
 use Drupal\webform\WebformSubmissionInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -28,7 +30,11 @@ class SubToNodeController extends ControllerBase {
 
     $timestamp = NULL;
     if (!empty($submission_array['bulletin_publish_date'])) {
-      $timestamp = date('Y-m-d\TH:i:s', strtotime($submission_array['bulletin_publish_date']));
+      // Interpret the date-only webform value in the site timezone, then store
+      // UTC so the calendar day is preserved (avoids an off-by-one day shift).
+      $date = new DrupalDateTime($submission_array['bulletin_publish_date'], date_default_timezone_get());
+      $date->setTimezone(new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE));
+      $timestamp = $date->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
     }
 
     $website = $submission_array['website'] ?? '';
@@ -45,9 +51,6 @@ class SubToNodeController extends ControllerBase {
       'field_bulletin_contact_name' => $submission_array['contact_name'] ?? '',
       'field_bulletin_contact_email' => $submission_array['contact_email'] ?? '',
       'field_bulletin_desired_publicati' => $timestamp,
-      'field_bulletin_reference_submiss' => [
-        'target_id' => $webform_submission_id,
-      ],
       'field_bulletin_contact_website' => [
         'uri' => $website,
         'title' => $website,
@@ -71,7 +74,10 @@ class SubToNodeController extends ControllerBase {
 
     $node->save();
 
-    $this->messenger()->addStatus($this->t('You have successfully created a node from webform submission @sid', [
+    // Remove the source submission once it has been promoted to a node.
+    $webform_submission->delete();
+
+    $this->messenger()->addStatus($this->t('Created a bulletin node from webform submission @sid and deleted the submission.', [
       '@sid' => $webform_submission_id,
     ]));
 
