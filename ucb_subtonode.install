@@ -194,8 +194,11 @@ function _ucb_subtonode_bulletin_node_permissions(): array {
 
 /**
  * Grants bulletin and webform submission permissions to site roles.
+ *
+ * @return array
+ *   Role IDs mapped to one of: updated, unchanged, missing.
  */
-function _ucb_subtonode_grant_permissions(): void {
+function _ucb_subtonode_grant_permissions(): array {
   $bulletin_permissions = _ucb_subtonode_bulletin_node_permissions();
   $create_from_submission = ['create bulletin from webform submission'];
   $role_permissions = [
@@ -205,10 +208,12 @@ function _ucb_subtonode_grant_permissions(): void {
     'content_editor' => array_merge($bulletin_permissions, $create_from_submission),
   ];
 
+  $results = [];
   $role_storage = \Drupal::entityTypeManager()->getStorage('user_role');
   foreach ($role_permissions as $role_id => $permissions) {
     $role = $role_storage->load($role_id);
     if (!$role) {
+      $results[$role_id] = 'missing';
       continue;
     }
 
@@ -222,8 +227,14 @@ function _ucb_subtonode_grant_permissions(): void {
 
     if ($changed) {
       $role->save();
+      $results[$role_id] = 'updated';
+    }
+    else {
+      $results[$role_id] = 'unchanged';
     }
   }
+
+  return $results;
 }
 
 /**
