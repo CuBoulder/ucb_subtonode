@@ -42,7 +42,7 @@ final class UcbSubtonodeCommands extends DrushCommands {
       }
     }
 
-    $this->logger()->success(dt('Finished granting ucb_subtonode permissions.'));
+    $this->logger()->notice(dt('Finished granting ucb_subtonode permissions.'));
   }
 
 }
